@@ -40,14 +40,16 @@ object SQLAPI extends App {
 
   val connection = (resource: String) => Connection(resource)
 
-  def execute(resource: String, sql: String): String =
-    (logParamter((connection compose logParamter[String])(resource)).open().execute _ andThen logParamter[String])(sql)
-
+  def execute(resource: String, sql: String):String =
+    ((connection compose logParamter[String] andThen logParamter[Connection]
+    andThen openConnection)(resource) andThen logParamter[String])(sql)
 
   def openConnection(connection: Connection): (String) => String =
     (sql: String) => {
       connection.open execute sql
   }
+
+
 
   execute("some DB", "some SQL")
 }
