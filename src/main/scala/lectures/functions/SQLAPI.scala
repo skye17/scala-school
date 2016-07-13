@@ -33,16 +33,17 @@ object SQLAPI extends App {
 
   }
 
-  private def logParamter[T](prm: T): T  = {
+  private def logParameter[T](prm: T): T  = {
     println("logged:" + prm)
     prm
   }
 
+
   val connection = (resource: String) => Connection(resource)
 
   def execute(resource: String, sql: String):String =
-    ((connection compose logParamter[String] andThen logParamter[Connection]
-    andThen openConnection)(resource) andThen logParamter[String])(sql)
+    ((connection compose logParameter[String] andThen logParameter[Connection]
+    andThen openConnection)(resource) andThen logParameter[String])(sql)
 
   def openConnection(connection: Connection): (String) => String =
     (sql: String) => {
