@@ -12,6 +12,7 @@ trait Data {
   val dataArray = "Клара Цеткин обожала Карла Маркса".split(" ")
 }
 
+
 object Computation extends App with Data {
 
   def computation(filterData: String, dataProducer: Array[String]): Array[String] = {
@@ -38,8 +39,7 @@ object Computation extends App with Data {
   *
   * Какой тип имеет partiallyAppliedCurriedFunction - ?
   */
-object CurriedComputation extends App with Data {
-
+object CurriedComputation extends Data{
   def curriedComputation(filterData: String)(dataProducer: Array[String]): Array[String] = {
     val splittedData = filterData.split(" ")
     splittedData.filter(dataItem => dataProducer.contains(dataItem))
@@ -55,7 +55,7 @@ object CurriedComputation extends App with Data {
 /**
   * Допишите реализации методов так, что бы результат совпадал с предыдущими.
   */
-object FunctionalComputation extends App with Data {
+object FunctionalComputation extends Data {
 
   def functionalComputation(filterData: String): (Array[String]) => Array[String] = {
     val splittedData = filterData.split(" ")
