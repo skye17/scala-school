@@ -3,7 +3,7 @@ package lectures.collections
 import scala.util.Random
 
 /**
-  * В этот задании Вам предстоит работать с очень неестабильным внешним сервисом.
+  * В этот задании Вам предстоит работать с очень нестабильным внешним сервисом.
   *
   * Для успешного завершения задания, вы должны реализовать метод buisnessLogic в объекте OptionVsNPE
   * Этот метод должен делать следующее
@@ -52,7 +52,11 @@ case class Connection(resource: Resource) {
   private val defaultResult = "something went wrong!"
 
   //ConnectionProducer.result(this)
-  def result(): String = ???
+  def result(): String = {
+    val result = Option(ConnectionProducer.result(this))
+    if (result.isDefined) result.get
+    else defaultResult
+  }
 }
 
 case class Resource(name: String)
@@ -61,11 +65,25 @@ object OptionVsNPE extends App {
 
   def businessLogic: String = try {
     // ResourceProducer
-    val result: String = ???
+    val result: String = {
+      val resourse = Option(ResourceProducer.produce)
+      if (resourse.isDefined) {
+        var connection = Option(ConnectionProducer.produce(resourse.get))
+        while (connection.isEmpty) {
+          connection = Option(ConnectionProducer.produce(resourse.get))
+        }
+        connection.get.result()
+      }
+      else {
+        throw new ResourceException
+      }
+    }
     println(result)
     result
   } catch {
-    case e: ResourceException => ???
+    case e: ResourceException =>
+      println("Try again with new resourse")
+      businessLogic
   }
 
   businessLogic
