@@ -51,7 +51,7 @@ object CouriersWithComprehension extends App {
 
   // какие адреса были обслужены
   def serveAddresses(addresses: List[Address], couriers: List[Courier]) = {
-    addresses take (couriers filter (_=> traffic().degree < 5) map (c => c.canServe)).sum
+    addresses take (couriers withFilter (_=> traffic().degree < 5) map (c => c.canServe)).sum
   }
 
   def traffic(): Traffic = new Traffic(Math.random() * 10)

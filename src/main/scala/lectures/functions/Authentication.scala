@@ -44,6 +44,9 @@ object Authentication extends App {
       else authByCard.lift(user)
   }
 
+  //val authenticated1:List[Option[User]] = for (user <- testUsers)
+  //  yield (authByCard andThen authByLP).lift(user)
  authenticated.flatten foreach println
+  //authenticated1.flatten foreach println
 
 }
