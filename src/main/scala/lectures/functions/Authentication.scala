@@ -43,10 +43,12 @@ object Authentication extends App {
       if (authByCard.lift(user).isEmpty) authByLP.lift(user)
       else authByCard.lift(user)
   }
+  authenticated.flatten foreach println
+  println
 
-  //val authenticated1:List[Option[User]] = for (user <- testUsers)
-  //  yield (authByCard andThen authByLP).lift(user)
- authenticated.flatten foreach println
-  //authenticated1.flatten foreach println
+  //Better version
+  val authFunction = (authByCard orElse authByLP).lift
+  val authenticated1:List[Option[User]] = for (user <- testUsers) yield authFunction(user)
+  authenticated1.flatten foreach println
 
 }
