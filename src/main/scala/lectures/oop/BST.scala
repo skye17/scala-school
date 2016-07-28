@@ -36,7 +36,22 @@ case class BSTImpl(value: Int,
                    left: Option[BSTImpl] = None,
                    right: Option[BSTImpl] = None) extends BST {
 
-  def add(newValue: Int): BST = ???
+  def add1(newValue: Int):BSTImpl = {
+    if (newValue < value) {
+      left match {
+        case Some(tree:BSTImpl) => BSTImpl(value, Some(tree.add1(newValue)), right)
+        case None => BSTImpl(value, Some(BSTImpl(newValue)),right)
+      }
+    }
+    else if (newValue > value) {
+      right match {
+        case Some(tree:BSTImpl) => BSTImpl(value, left, Some(tree.add1(newValue)))
+        case None => BSTImpl(value, left,Some(BSTImpl(newValue)))
+      }
+    } else this
+  }
+
+  def add(newValue: Int): BST = add1(newValue)
 
   def find(value: Int): Option[BST] = ???
 

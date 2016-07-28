@@ -39,9 +39,10 @@ class SQLAPI(resource :String) {
   }
 
 
+
   val connection = (resource: String) => Connection(resource)
 
-  def execute(sql: String):String =
+  def execute(sql: String): String = /// use resourse from constructor
     ((connection compose logParameter[String] andThen logParameter[Connection]
     andThen openConnection)(this.resource) andThen logParameter[String])(sql)
 
@@ -53,5 +54,7 @@ class SQLAPI(resource :String) {
 }
 
 object SQLCheck extends App {
+
   new SQLAPI("some DB").execute("some SQL")
+  
 }

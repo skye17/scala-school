@@ -1,10 +1,11 @@
 package lectures.matching
 
-import lectures.matching.SortingStuff.{Book, StuffBox, Watches}
+import lectures.matching.SortingStuff._
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{Matchers, WordSpec}
 
+import scala.collection.immutable.IndexedSeq
 import scala.util.Random
 
 
@@ -34,6 +35,7 @@ class SortingStuffGeneratorBasedTest extends WordSpec with Matchers with Propert
   val cheepWatchGen: Gen[Watches] = Gen.zip(Gen.choose(0f, 1000f), Gen.alphaStr).map(w => Watches(w._2, w._1))
   val bookGenerator = Gen.alphaStr.map(name => Book(name, Random.nextBoolean()))
   val interestingBookGen = bookGenerator.filter(_.isInteresting)
+  val knifeGenerator = Gen.oneOf(Some(Knife),None)
 
   // Override configuration if you need
   implicit override val generatorDrivenConfig =
@@ -72,7 +74,20 @@ class SortingStuffGeneratorBasedTest extends WordSpec with Matchers with Propert
       }
     }
     "find knife" which {
-      "was occasionally disposed" in pending
+      "was occasionally disposed" in pending{
+        val ms = generatorDrivenConfig.minSuccessful
+
+        val books = (1 to ms) flatMap { _ => interestingBookGen.sample } toList
+        val watches = (1 to ms) flatMap { _ => cheepWatchGen.sample } toList
+        val knifes = knifeGenerator
+        forAll(knifes) { isKnife => {
+          isKnife match {
+            case Some(k) => findMyKnife(StuffBox(books,watches,_,List(k)))
+        }
+
+        }
+
+      }
     }
 
     "put boots in a proper place" when {
