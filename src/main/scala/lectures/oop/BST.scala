@@ -34,49 +34,56 @@ trait BST {
   def find(value: Int): Option[BST]
 
   def traverse:List[Int]
+  def traverseBFS:List[List[Int]]
   def fold(aggregator: Int)(f: (Int, Int) =>(Int)):Int
+  // Apply some function to each level
+  def foldBFS(neutral:Int)(f:(Int, Int) => Int):List[Int]
 }
 
 case class BSTImpl(value: Int,
                    left: Option[BSTImpl] = None,
                    right: Option[BSTImpl] = None) extends BST {
 
-  def add1(newValue: Int):BSTImpl = {
+  def addImpl(newValue: Int):BSTImpl = {
     if (newValue < value) {
       left match {
-        case Some(tree:BSTImpl) => BSTImpl(value, Some(tree.add1(newValue)), right)
+        case Some(tree:BSTImpl) => BSTImpl(value, Some(tree.addImpl(newValue)), right)
         case None => BSTImpl(value, Some(BSTImpl(newValue)),right)
       }
     }
     else if (newValue > value) {
       right match {
-        case Some(tree:BSTImpl) => BSTImpl(value, left, Some(tree.add1(newValue)))
+        case Some(tree:BSTImpl) => BSTImpl(value, left, Some(tree.addImpl(newValue)))
         case None => BSTImpl(value, left,Some(BSTImpl(newValue)))
       }
     } else this
+
   }
 
-  def add(newValue: Int): BST = add1(newValue)
+  def add(newValue: Int): BST = addImpl(newValue)
 
-  def find1(value: Int): Option[BSTImpl] =
+  private def findImpl(value: Int): Option[BSTImpl] =
     if (value == this.value) Some(this)
-    else if (value < this.value)
-      left match {
-        case Some(tree) => tree.find1(value)
-        case None => None
-      } else {
-      right match {
-        case Some(tree) => tree.find1(value)
-        case None => None
+    else
+      if (value < this.value)
+        left match {
+          case Some(tree) => tree.findImpl(value)
+          case None => None
+        }
+      else {
+        right match {
+          case Some(tree) => tree.findImpl(value)
+          case None => None
+        }
       }
-    }
 
-  def find(value: Int): Option[BST] = find1(value)
+
+  def find(value: Int): Option[BST] = findImpl(value)
 
   // override def toString() = ???
 
   def traverse:List[Int] = traverseAcc(Nil)
-  def traverseAcc(acc:List[Int]):List[Int] = {
+  private def traverseAcc(acc:List[Int]):List[Int] = {
     (left, right) match {
       case (None,None) => acc :+ value
       case (Some(tree), None) => tree.traverse ++ List(value) ++ acc
@@ -85,8 +92,26 @@ case class BSTImpl(value: Int,
     }
   }
 
+  def traverseBFS:List[List[Int]] = {
+    def merge(a:List[List[Int]], b:List[List[Int]], acc:List[List[Int]] = Nil):List[List[Int]] =
+      (a, b) match {
+        case (Nil,Nil) => acc
+        case (head::_, Nil) => acc ++ a
+        case (Nil, head::_) => acc ++ b
+        case (leftHead::leftTail, rightHead::rightTail) => merge(leftTail, rightTail, acc :+ (leftHead ++ rightHead))
+      }
+    (left, right) match {
+      case (None,None) => List(List(value))
+      case (Some(tree), None) => List(value) +: tree.traverseBFS
+      case (None, Some(tree)) => List(value) +: tree.traverseBFS
+      case (Some(leftTree), Some(rightTree)) => List(value) +: merge(leftTree.traverseBFS, rightTree.traverseBFS)
+
+    }
+  }
+
   def fold(aggregator: Int)(f: (Int, Int) =>(Int)):Int = traverse.fold(aggregator)(f)
 
+  def foldBFS(neutral:Int)(f: (Int, Int) =>(Int)) = traverseBFS.map(_.foldLeft(neutral)(f))
 }
 
 object TreeTest extends App {
@@ -104,19 +129,27 @@ object TreeTest extends App {
   val tree: BST = randomTreeGenerator(nodesCount) // generator goes here
 
   val seqTree = seqTreeGenerator(nodesCount)
+  println(seqTree)
   println(seqTree.fold(0)(_+_))
+
+  println(seqTree.traverseBFS)
+  println(seqTree.foldBFS(0)(_+_))
 
   for (i <- 1 to nodesCount) {assert(seqTree.find(i).isDefined)}
   assert(seqTree.find(0).isEmpty)
 
+
+
+
+
   def seqTreeGenerator(numNodes:Int): BST = {
     val treeValues = Random.shuffle(1 to numNodes toList)
-    treeValues.tail.foldLeft(new BSTImpl(treeValues.head))((tree:BSTImpl, newVal:Int) => tree.add1(newVal))
+    treeValues.tail.foldLeft(new BSTImpl(treeValues.head))((tree:BSTImpl, newVal:Int) => tree.addImpl(newVal))
   }
 
   def randomTreeGenerator(numNodes:Int): BST = {
     val treeValues = for ( i <- 1 until numNodes) yield (Math.random()*maxValue).toInt
-    treeValues.foldLeft(BSTImpl((Math.random()*maxValue).toInt))((tree:BSTImpl, newVal:Int) => tree.add1(newVal))
+    treeValues.foldLeft(BSTImpl((Math.random()*maxValue).toInt))((tree:BSTImpl, newVal:Int) => tree.addImpl(newVal))
   }
   // add marker items
   val testTree = tree.add(markerItem).add(markerItem2).add(markerItem3)
@@ -134,5 +167,6 @@ object TreeTest extends App {
   require(addedRandom.find(markerItem3).isDefined)
   require(addedSeqTree.find(markerItem3).isDefined)
 
-  println(testTree)
+  //println(testTree)
+
 }
