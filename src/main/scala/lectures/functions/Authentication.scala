@@ -26,9 +26,10 @@ import scala.util.Random
   *
   * Что-либо еще, кроме знаков ??? заменять нельзя
   */
-object Authentication extends App {
+object Authentication {
 
   import AuthenticationData._
+
 
   val authByCard: PartialFunction[User, User] = {
     case c:CardUser if registeredCards.contains(c.credentials) => c
@@ -43,12 +44,13 @@ object Authentication extends App {
       if (authByCard.lift(user).isEmpty) authByLP.lift(user)
       else authByCard.lift(user)
   }
-  authenticated.flatten foreach println
-  println
+
+  //authenticated.flatten foreach println
+  //println
 
   //Better version
   val authFunction = (authByCard orElse authByLP).lift
   val authenticated1:List[Option[User]] = for (user <- testUsers) yield authFunction(user)
-  authenticated1.flatten foreach println
+  //authenticated1.flatten foreach println
 
 }

@@ -1,5 +1,6 @@
 package lectures.functions
 
+
 import scala.util.Random
 
 /**
@@ -43,6 +44,10 @@ object AuthenticationData {
   val cardUserCreds2 = CardCredentials(87654321)
   val authUserCreds = LPCredentials("qwerty", "qwerty")
   val authUserCreds2 = LPCredentials("qwerty2", "qwerty2")
+
+
+
+
 
   val registeredCards: Set[CardCredentials] = Set(
     CardCredentials(), CardCredentials(), CardCredentials(), cardUserCreds,

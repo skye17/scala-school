@@ -1,5 +1,7 @@
 package lectures.oop
 
+import scala.util.Random
+
 
 /**
   * BSTImpl - это бинарное дерево поиска, содержащее только значения типа Int
@@ -30,6 +32,9 @@ trait BST {
   def add(newValue: Int): BST
 
   def find(value: Int): Option[BST]
+
+  def traverse:List[Int]
+  def fold(aggregator: Int)(f: (Int, Int) =>(Int)):Int
 }
 
 case class BSTImpl(value: Int,
@@ -53,9 +58,34 @@ case class BSTImpl(value: Int,
 
   def add(newValue: Int): BST = add1(newValue)
 
-  def find(value: Int): Option[BST] = ???
+  def find1(value: Int): Option[BSTImpl] =
+    if (value == this.value) Some(this)
+    else if (value < this.value)
+      left match {
+        case Some(tree) => tree.find1(value)
+        case None => None
+      } else {
+      right match {
+        case Some(tree) => tree.find1(value)
+        case None => None
+      }
+    }
+
+  def find(value: Int): Option[BST] = find1(value)
 
   // override def toString() = ???
+
+  def traverse:List[Int] = traverseAcc(Nil)
+  def traverseAcc(acc:List[Int]):List[Int] = {
+    (left, right) match {
+      case (None,None) => acc :+ value
+      case (Some(tree), None) => tree.traverse ++ List(value) ++ acc
+      case (None, Some(tree)) => List(value) ++ tree.traverse ++ acc
+      case (Some(leftTree), Some(rightTree)) => leftTree.traverse ++ List(value) ++ rightTree.traverse ++ acc
+    }
+  }
+
+  def fold(aggregator: Int)(f: (Int, Int) =>(Int)):Int = traverse.fold(aggregator)(f)
 
 }
 
@@ -71,15 +101,38 @@ object TreeTest extends App {
 
   // Generate huge tree
   val root: BST = BSTImpl(maxValue / 2)
-  val tree: BST = ??? // generator goes here
+  val tree: BST = randomTreeGenerator(nodesCount) // generator goes here
 
+  val seqTree = seqTreeGenerator(nodesCount)
+  println(seqTree.fold(0)(_+_))
+
+  for (i <- 1 to nodesCount) {assert(seqTree.find(i).isDefined)}
+  assert(seqTree.find(0).isEmpty)
+
+  def seqTreeGenerator(numNodes:Int): BST = {
+    val treeValues = Random.shuffle(1 to numNodes toList)
+    treeValues.tail.foldLeft(new BSTImpl(treeValues.head))((tree:BSTImpl, newVal:Int) => tree.add1(newVal))
+  }
+
+  def randomTreeGenerator(numNodes:Int): BST = {
+    val treeValues = for ( i <- 1 until numNodes) yield (Math.random()*maxValue).toInt
+    treeValues.foldLeft(BSTImpl((Math.random()*maxValue).toInt))((tree:BSTImpl, newVal:Int) => tree.add1(newVal))
+  }
   // add marker items
   val testTree = tree.add(markerItem).add(markerItem2).add(markerItem3)
+  val addedRandom = randomTreeGenerator(nodesCount).add(markerItem).add(markerItem2).add(markerItem3)
+  val addedSeqTree = seqTree.add(markerItem).add(markerItem2).add(markerItem3)
 
   // check that search is correct
   require(testTree.find(markerItem).isDefined)
-  require(testTree.find(markerItem).isDefined)
-  require(testTree.find(markerItem).isDefined)
+  require(addedRandom.find(markerItem).isDefined)
+  require(addedSeqTree.find(markerItem).isDefined)
+  require(testTree.find(markerItem2).isDefined)
+  require(addedRandom.find(markerItem2).isDefined)
+  require(addedSeqTree.find(markerItem2).isDefined)
+  require(testTree.find(markerItem3).isDefined)
+  require(addedRandom.find(markerItem3).isDefined)
+  require(addedSeqTree.find(markerItem3).isDefined)
 
   println(testTree)
 }
