@@ -78,7 +78,10 @@ case class BSTImpl(value: Int,
       }
 
 
-  def find(value: Int): Option[BST] = findImpl(value)
+  //def find(value: Int): Option[BST] = findImpl(value)
+  def find(value:Int):Option[BST] = if (traverseBFS.exists(level => level.contains(value))) Some(this) else None
+
+
 
   // override def toString() = ???
 
@@ -132,8 +135,8 @@ object TreeTest extends App {
   println(seqTree)
   println(seqTree.fold(0)(_+_))
 
-  println(seqTree.traverseBFS)
-  println(seqTree.foldBFS(0)(_+_))
+  //println(seqTree.traverseBFS)
+  //println(seqTree.foldBFS(0)(_+_))
 
   for (i <- 1 to nodesCount) {assert(seqTree.find(i).isDefined)}
   assert(seqTree.find(0).isEmpty)
