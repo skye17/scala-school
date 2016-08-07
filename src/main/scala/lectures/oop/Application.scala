@@ -3,7 +3,7 @@ package lectures.oop
 import lectures.functions.SQLAPI
 
 /**
-  * У вас есть прилосдение, которое можно запустить в тестовом или продуктовом окружении
+  * У вас есть приложение, которое можно запустить в тестовом или продуктовом окружении
   * В зависимости от окружения ваше приложение создает БД с тестовым или бовым адресом
   * и использует подходящую реализацию сервиса.
   *
@@ -22,23 +22,42 @@ trait UsefulService {
   def doSomeService(): Int
 }
 
+trait SQLAPIComponent {
+  val component:SQLAPI
+}
+
 trait TestServiceImpl extends UsefulService {
+  self:SQLAPIComponent =>
+
   private val sql = "do the SQL query and then count words"
-  def doSomeService() = ??? //execute(sql) //подсчитайте количество слов в результате execute
+  def doSomeService() = {  //execute(sql) //подсчитайте количество слов в результате execute
+    component.execute(sql).split(" ").length
+  }
+
 }
 
 trait ProductionServiceImpl extends UsefulService {
+  self:SQLAPIComponent =>
+
   private val sql = "do the SQL query and than count 'a' sympols"
-  def doSomeService() = ??? //execute(sql) // подсчитайте сколько символов 'a' в полученной строке
+  def doSomeService() = { //execute(sql) // подсчитайте сколько символов 'a' в полученной строке
+    component.execute(sql).filter(_ == 'a').length
+  }
 }
 
-class Application(isTestEnv: Boolean) {
 
-  val usefulService : UsefulService = if (isTestEnv)
-   ??? //передайте "test db Resource" в качестве ресурсв в конструктор SQLAPI
-  else
-   ??? //передайте "production Resource" в качестве ресурсв в конструктор SQLAPI
+class Application(isTestEnv: Boolean) {
+  val usefulService : UsefulService =
+    if (isTestEnv) //передайте "test db Resource" в качестве ресурсв в конструктор SQLAPI
+      new { val component = new SQLAPI("test db Resource")} with TestServiceImpl with SQLAPIComponent
+    else //передайте "production Resource" в качестве ресурсв в конструктор SQLAPI
+      new { val component = new SQLAPI("production Resourse")} with ProductionServiceImpl with SQLAPIComponent
+
 
   def doTheJob() = usefulService.doSomeService()
 
 }
+
+
+
+
