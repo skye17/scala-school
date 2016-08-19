@@ -47,15 +47,3 @@ object InheritanceTest extends App {
   val k = new ConcreteClass()
   k.whoAmI()
 }
-
-
-
-
-
-
-
-
-
-
-
-
